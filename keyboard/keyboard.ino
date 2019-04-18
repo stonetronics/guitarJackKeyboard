@@ -58,12 +58,21 @@ SoftwareSerial HC05(TX, RX);
 
 void setup() {
 
+
+//setup leds to blink once turned on
   pinMode(LED1_R, OUTPUT);
   pinMode(LED1_G, OUTPUT);
   pinMode(LED1_B, OUTPUT);
   pinMode(LED2_R, OUTPUT);
   pinMode(LED2_G, OUTPUT);
   pinMode(LED2_B, OUTPUT);
+  digitalWrite(LED1_R, LOW);
+  digitalWrite(LED1_G, LOW);
+  digitalWrite(LED1_B, LOW);
+  digitalWrite(LED2_R, LOW);
+  digitalWrite(LED2_G, LOW);
+  digitalWrite(LED2_B, LOW);
+  
 
   Serial.begin(57600); //setup debug serial
   HC05.begin(38400); //setup bt
@@ -116,10 +125,10 @@ _key getKey(int channel)
 
 void loop() {
   char inputByte = '0';
-  _key terminal1 = _NONE;
-  _key terminal1_old = _NONE;
-  _key terminal2 = _NONE;
-  _key terminal2_old = _NONE;
+  static _key terminal1 = _NONE;
+  static _key terminal1_old = _NONE;
+  static _key terminal2 = _NONE;
+  static _key terminal2_old = _NONE;
 
   //read the connected keys
   terminal1 = getKey(TERMINAL1);
@@ -132,46 +141,64 @@ void loop() {
     HC05.print("terminal1: ");
     HC05.print(getString(terminal1_old));
     HC05.print(" => ");
-    HC05.print(getString(terminal1));
+    HC05.println(getString(terminal1));
 
     //change led accordingly
     switch (terminal1) {
+      
       case _KEY1:
-          //green led
+        digitalWrite(LED1_R, HIGH);
+        digitalWrite(LED1_G, LOW);
+        digitalWrite(LED1_B, HIGH);
         break;
+        
       case _KEY2:
-          //blue led
+        digitalWrite(LED1_R, HIGH);
+        digitalWrite(LED1_G, HIGH);
+        digitalWrite(LED1_B, LOW);
         break;
+        
       case _NONE:
-      default:
-         //red led
+        digitalWrite(LED1_R, LOW);
+        digitalWrite(LED1_G, HIGH);
+        digitalWrite(LED1_B, HIGH);
         break;
-
-      //save value
-      terminal1_old = terminal1;
     }
+
+    //save value
+      terminal1_old = terminal1;
   }
 
-  if (terminal2 != terminal2_old)
-  {
+  if (terminal2 != terminal2_old) {
     HC05.print("terminal2: ");
     HC05.print(getString(terminal2_old));
     HC05.print(" => ");
-    HC05.print(getString(terminal2));
-    terminal2_old = terminal2;
+    HC05.println(getString(terminal2));
+    
+    //change led accordingly
     switch (terminal2) {
-      case _KEY1:
-          //green led
-        break;
-      case _KEY2:
-          //blue led
-        break;
-      case _NONE:
-      default:
-         //red led
-        break;
       
+      case _KEY1:
+        digitalWrite(LED2_R, HIGH);
+        digitalWrite(LED2_G, LOW);
+        digitalWrite(LED2_B, HIGH);
+        break;
+        
+      case _KEY2:
+        digitalWrite(LED2_R, HIGH);
+        digitalWrite(LED2_G, HIGH);
+        digitalWrite(LED2_B, LOW);
+        break;
+        
+      case _NONE:
+        digitalWrite(LED2_R, LOW);
+        digitalWrite(LED2_G, HIGH);
+        digitalWrite(LED2_B, HIGH);
+        break;
     }
+
+    //save value
+    terminal2_old = terminal2;
   }
   
   while(HC05.available() > 0) {
@@ -185,10 +212,8 @@ void loop() {
         HC05.println("Connected Keychains:");
         HC05.print("Terminal 1: ");
         HC05.println(getString(terminal1));
-        HC05.println(analogRead(TERMINAL1));
         HC05.print("Terminal 2: ");
         HC05.println(getString(terminal2));
-        HC05.println(analogRead(TERMINAL2));
         break;
 
       default:
